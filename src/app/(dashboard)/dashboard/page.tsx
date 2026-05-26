@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { urgencyStyles, statusStyles, statusLabels, UrgencyLevel } from '@/lib/utils'
+import { urgencyStyles, statusStyles, statusLabels, UrgencyLevel, getLabTiming, urgencyWeight } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useRequireUser } from '@/lib/hooks'
 
@@ -53,6 +53,7 @@ export default function DashboardPage() {
   const [updating, setUpdating]     = useState<string | null>(null)
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
   const [printTimestamp, setPrintTimestamp] = useState('')
+  const [now, setNow]               = useState(new Date())
 
   const fetchData = useCallback(async () => {
     const res = await fetch('/api/dashboard')
@@ -69,6 +70,12 @@ export default function DashboardPage() {
     const interval = setInterval(fetchData, 120_000)
     return () => clearInterval(interval)
   }, [fetchData, ready])
+
+  // Tick every minute so urgency labels stay current without a full refetch
+  useEffect(() => {
+    const tick = setInterval(() => setNow(new Date()), 60_000)
+    return () => clearInterval(tick)
+  }, [])
 
   async function updateStatus(patientTestId: string, status: string) {
     setUpdating(patientTestId)
@@ -91,15 +98,26 @@ export default function DashboardPage() {
     setTimeout(() => window.print(), 50)
   }
 
+  // Recompute timing from live clock so labels stay current between fetches
+  const liveData = data
+    .map((group) => ({
+      ...group,
+      timing: getLabTiming(group.lab.openingTime, group.lab.closingTime, now),
+    }))
+    .sort((a, b) => {
+      const diff = urgencyWeight(a.timing.urgency) - urgencyWeight(b.timing.urgency)
+      return diff !== 0 ? diff : a.timing.minutesRemaining - b.timing.minutesRemaining
+    })
+
   // Split data into active (any non-DONE entry) and completed (all DONE) sections
-  const activeData = data.map((group) => ({
+  const activeData = liveData.map((group) => ({
     ...group,
     tests: group.tests
       .map((t) => ({ ...t, entries: t.entries.filter((e) => e.status !== 'DONE') }))
       .filter((t) => t.entries.length > 0),
   })).filter((g) => g.tests.length > 0)
 
-  const completedData = data.map((group) => ({
+  const completedData = liveData.map((group) => ({
     ...group,
     tests: group.tests
       .map((t) => ({ ...t, entries: t.entries.filter((e) => e.status === 'DONE') }))

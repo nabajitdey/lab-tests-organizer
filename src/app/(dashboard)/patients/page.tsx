@@ -159,10 +159,11 @@ export default function PatientsPage() {
       })
     )
     setPrintMode(true)
-    // Wait for React to render all expanded test sections
+    // Wait for React to render all expanded sections before opening print dialog
     await new Promise((r) => setTimeout(r, 250))
+    // Reset only after the print dialog is fully closed (afterprint fires after Save/Cancel)
+    window.addEventListener('afterprint', () => setPrintMode(false), { once: true })
     window.print()
-    setPrintMode(false)
   }
 
   // Tests not already assigned to the patient

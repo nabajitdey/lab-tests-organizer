@@ -26,7 +26,6 @@ export default function PatientsPage() {
   const [tests, setTests]         = useState<Test[]>([])
   const [loading, setLoading]     = useState(true)
   const [expanded, setExpanded]   = useState<string | null>(null)
-  const [printMode, setPrintMode] = useState(false)
   const [printTimestamp, setPrintTimestamp] = useState('')
 
   const [patientModal, setPatientModal] = useState(false)
@@ -151,19 +150,15 @@ export default function PatientsPage() {
     load()
   }
 
-  async function handlePrint() {
+  function handlePrint() {
     setPrintTimestamp(
       new Date().toLocaleString('en-GB', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
         hour: '2-digit', minute: '2-digit',
       })
     )
-    setPrintMode(true)
-    // Wait for React to render all expanded sections before opening print dialog
-    await new Promise((r) => setTimeout(r, 250))
-    // Reset only after the print dialog is fully closed (afterprint fires after Save/Cancel)
-    window.addEventListener('afterprint', () => setPrintMode(false), { once: true })
-    window.print()
+    // Small delay so React renders the timestamp before the print dialog opens
+    setTimeout(() => window.print(), 50)
   }
 
   // Tests not already assigned to the patient
@@ -242,14 +237,13 @@ export default function PatientsPage() {
           const pendingCount = patient.patientTests.filter((t) => t.status === 'PENDING').length
           const sentCount    = patient.patientTests.filter((t) => t.status === 'SAMPLE_COLLECTED').length
           const isExpanded   = expanded === patient.id
-          const showDetails  = isExpanded || printMode
 
           return (
             <div key={patient.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden break-inside-avoid">
               {/* Patient header */}
               <div
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors print:cursor-default print:hover:bg-white"
-                onClick={() => !printMode && setExpanded(isExpanded ? null : patient.id)}
+                onClick={() => setExpanded(isExpanded ? null : patient.id)}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 print:hidden">
@@ -306,9 +300,8 @@ export default function PatientsPage() {
                 </div>
               </div>
 
-              {/* Expanded test list — always visible in printMode */}
-              {showDetails && (
-                <div className="border-t border-slate-100 p-4">
+              {/* Expanded test list — hidden when collapsed, always shown in print */}
+              <div className={`border-t border-slate-100 p-4 print:!block ${isExpanded ? '' : 'hidden'}`}>
                   {patient.notes && (
                     <p className="text-sm text-slate-600 bg-slate-50 rounded-lg p-3 mb-3">
                       <span className="font-medium">Notes:</span> {patient.notes}
@@ -369,7 +362,6 @@ export default function PatientsPage() {
                     </div>
                   )}
                 </div>
-              )}
             </div>
           )
         })}

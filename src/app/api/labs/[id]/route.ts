@@ -10,16 +10,10 @@ const schema = z.object({
   closingTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
 })
 
-async function requireAdmin(session: Awaited<ReturnType<typeof getServerSession>>) {
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (session.user.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  return null
-}
-
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
-  const denied = await requireAdmin(session)
-  if (denied) return denied
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (session.user.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   try {
     const data = schema.parse(await req.json())
@@ -33,8 +27,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
-  const denied = await requireAdmin(session)
-  if (denied) return denied
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (session.user.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   await prisma.lab.delete({ where: { id: params.id } })
   return NextResponse.json({ ok: true })

@@ -211,18 +211,18 @@ export default function PatientsPage() {
           <p className="text-sm text-slate-500">{patients.length} patient{patients.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-2 print:hidden">
-          <Button onClick={openAddPatient} size="sm">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <Button onClick={openAddPatient} size="sm" className="!px-2.5 !py-1.5 sm:!px-3 sm:!py-2 gap-1">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span className="hidden sm:inline">Add Patient</span>
+            <span className="text-xs sm:text-sm">Add Patient</span>
           </Button>
-          <Button variant="secondary" size="sm" onClick={handlePrint}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <Button variant="secondary" size="sm" onClick={handlePrint} className="!px-2.5 !py-1.5 sm:!px-3 sm:!py-2 gap-1">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
             </svg>
-            <span className="hidden sm:inline">Save PDF</span>
+            <span className="text-xs sm:text-sm">Save PDF</span>
           </Button>
         </div>
       </div>

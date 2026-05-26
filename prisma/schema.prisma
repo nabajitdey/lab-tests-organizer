@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String
+  password  String
+  role      UserRole  @default(USER)
+  patients  Patient[]
+  labs      Lab[]
+  tests     Test[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Lab {
+  id          String   @id @default(cuid())
+  name        String
+  openingTime String   // "HH:MM" 24-hour format, e.g. "08:00"
+  closingTime String   // "HH:MM" 24-hour format, e.g. "17:00"
+  isGlobal    Boolean  @default(false)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tests       Test[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Test {
+  id           String        @id @default(cuid())
+  name         String
+  labId        String
+  lab          Lab           @relation(fields: [labId], references: [id], onDelete: Cascade)
+  isGlobal     Boolean       @default(false)
+  userId       String?
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patientTests PatientTest[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Patient {
+  id           String        @id @default(cuid())
+  name         String
+  wardBed      String?
+  age          Int?
+  notes        String?
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patientTests PatientTest[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model PatientTest {
+  id        String     @id @default(cuid())
+  patientId String
+  patient   Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  testId    String
+  test      Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  status    TestStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([patientId, testId])
+}
+
+enum TestStatus {
+  PENDING
+  SAMPLE_COLLECTED
+  DONE
+}

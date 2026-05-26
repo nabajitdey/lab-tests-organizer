@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  /* iPhone safe-area padding for bottom sheet modals */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+@media print {
+  @page {
+    margin: 1.5cm 1cm;
+    size: A4 portrait;
+  }
+
+  /* Remove sidebar layout offset */
+  main {
+    margin-left: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  /* Preserve colored backgrounds (urgency indicators) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

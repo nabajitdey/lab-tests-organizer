@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Write-Output $env:PATH)",
+      "PowerShell(winget install OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements 2>&1)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}
